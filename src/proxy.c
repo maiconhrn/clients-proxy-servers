@@ -123,6 +123,8 @@ void clients_connection_handler(void *socket_fd, sem_t *semaphore) {
     char message[2000], final_message[2000];
 
     while ((read_size = recv(sock, message, 2000, 0)) > 0) {
+        sem_wait(semaphore);
+
         requisitions_counter++;
         requisition req;
         init_requisition(&req, requisitions_counter);
@@ -164,6 +166,8 @@ void servers_connection_handler(void *socket_fd, sem_t *semaphore) {
     char message[2000], final_msg[2000];
 
     while ((read_size = recv(sock, message, 2000, 0)) > 0) {
+        sem_wait(semaphore);
+
         requisition *req = requisitions.array[get_requisition_id(message) - 1];
 
         if (!req->complete) {

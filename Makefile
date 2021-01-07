@@ -1,4 +1,5 @@
-all: client proxy server
+all: mkdir-build client proxy server
+
 client: src/client.c
 	gcc -o build/client src/client.c
 
@@ -7,6 +8,12 @@ proxy: src/proxy.c
 
 server: src/server.c
 	gcc -o build/server src/server.c -lpthread
+
+mkdir-build:
+	mkdir -p build/
+
+clean:
+	rm -r build/
 
 run_client: build/client
 	build/client

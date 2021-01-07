@@ -90,9 +90,9 @@ int main() {
 
     int read_size;
     int found = 0;
-    char *insercao_ok = "Novo livro registrado\n";
-    char *requsicao_desconhecida = "Comando desconhecido\n";
-    char *nenhum_cadastro = "Nenhum cadastro encontrado\n";
+    char *insercao_ok = "Novo livro registrado";
+    char *requsicao_desconhecida = "Comando desconhecido";
+    char *nenhum_cadastro = "Nenhum cadastro encontrado";
     char message[2000], message_socket_fd[2000], message_requisition_id[2000], save_buffer[2000], new_reg[2000],
             book_name[2000], *final_message;
     char *field;
@@ -120,7 +120,7 @@ int main() {
                 printf("in parent\n");
 
                 fd1 = open(myfifo, O_WRONLY);
-                write(fd1, message, strlen(message));
+                write(fd1, message, sizeof(message));
                 close(fd1);
             }
 
@@ -161,44 +161,53 @@ int main() {
             char read_buffer[2000];
 
             fp = fopen(FILE_NAME_BOOKS, "r");
-            rewind(fp);
-            found = 0;
 
-            get_requisition_id(message, message_requisition_id);
-            get_socket_fd(message, message_socket_fd);
-            get_payload(message, book_name);
+            if (fp != NULL) {
+                rewind(fp);
+                found = 0;
 
-            while (fread(&reg_size, sizeof(int), 1, fp) && !found) {
-                fread(read_buffer, reg_size, 1, fp);
-                strcpy(save_buffer, read_buffer);
+                get_requisition_id(message, message_requisition_id);
+                get_socket_fd(message, message_socket_fd);
+                get_payload(message, book_name);
 
-                field = strtok(save_buffer, "|");
-                if (strcmp(book_name, field) == 0) {
-                    printf("%s\n", read_buffer);
-                    found = 1;
+                while (fread(&reg_size, sizeof(int), 1, fp) && !found) {
+                    fread(read_buffer, reg_size, 1, fp);
+                    strcpy(save_buffer, read_buffer);
 
+                    field = strtok(save_buffer, "|");
+                    if (strcmp(book_name, field) == 0) {
+                        printf("%s\n", read_buffer);
+                        found = 1;
+
+                        memset(message, '\0', sizeof(message));
+
+                        make_message(message_requisition_id, message_socket_fd, read_buffer, message);
+
+                        write(socket_fd, message, strlen(message));
+                    }
+
+                    memset(read_buffer, '\0', sizeof(read_buffer));
+                    memset(save_buffer, '\0', sizeof(save_buffer));
+                }
+
+                if (!found) {
                     memset(message, '\0', sizeof(message));
 
-                    make_message(message_requisition_id, message_socket_fd, read_buffer, message);
+                    make_message(message_requisition_id, message_socket_fd, nenhum_cadastro, message);
 
                     write(socket_fd, message, strlen(message));
                 }
 
-                memset(read_buffer, '\0', sizeof(read_buffer));
-                memset(save_buffer, '\0', sizeof(save_buffer));
-            }
+                memset(message, '\0', sizeof(message));
 
-            if (!found) {
+                fclose(fp);
+            } else {
                 memset(message, '\0', sizeof(message));
 
                 make_message(message_requisition_id, message_socket_fd, nenhum_cadastro, message);
 
                 write(socket_fd, message, strlen(message));
             }
-
-            memset(message, '\0', sizeof(message));
-
-            fclose(fp);
         } else {
             memset(message, '\0', sizeof(message));
             strcat(message, message_socket_fd);

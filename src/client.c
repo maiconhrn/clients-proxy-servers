@@ -40,7 +40,7 @@ int main() {
         perror("connection failed");
         exit(EXIT_FAILURE);
     }
-    puts("connection success");
+    puts("connection success\n");
 
     while (1) {
         printf("Entre com a requisicao (cadastrar/buscar): ");
@@ -83,7 +83,7 @@ int main() {
             }
 
             memset(book, '\0', sizeof(book));
-            puts(server_reply);
+            printf("%s\n", server_reply);
             memset(server_reply, '\0', sizeof(server_reply));
         } else if (strcmp(acao, "buscar") == 0) {
             memset(acao, '\0', sizeof(acao));
@@ -107,18 +107,15 @@ int main() {
 
             memset(book, '\0', sizeof(book));
 
-            if (strcmp(server_reply, "Nenhum cadastro encontrado\n") == 0) {  
-                printf("%s", server_reply);
+            if (strcmp(server_reply, "Nenhum cadastro encontrado") == 0) {  
+                printf("%s\n", server_reply);
             } else {
                 printf("\n");
-                campo = strtok(server_reply, "|");
-                printf("Titulo: %s\n", campo);
-                campo = strtok(NULL, "|");
-                printf("Autor: %s\n", campo);
-                campo = strtok(NULL, "|");
-                printf("Ano de publicacao: %s\n", campo);
+                printf("Titulo: %s\n", strtok(server_reply, "|"));
+                printf("Autor: %s\n", strtok(NULL, "|"));
+                printf("Ano de publicacao: %s\n", strtok(NULL, "|"));
             }
-            campo = NULL;
+            
             memset(server_reply, '\0', sizeof(server_reply));
         } else {
             memset(server_reply, '\0', sizeof(server_reply));
